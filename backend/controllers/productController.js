@@ -3,13 +3,13 @@ import ApiFeatures from "../utils/apifeatures.js";
 
 //get all products
 export const getAllProducts = async (req, res) => {
-    const resultPerPage = 5
-    const productCount = await productModel.countDocuments()
+  const resultPerPage = 5;
+  const productCount = await productModel.countDocuments();
   try {
     const apiFeature = new ApiFeatures(productModel.find({}), req.query)
       .search()
       .filter()
-      .pagination(resultPerPage)
+      .pagination(resultPerPage);
     const products = await apiFeature.query;
     res.status(200).json({ success: true, data: products, productCount });
   } catch (error) {
@@ -86,6 +86,56 @@ export const getProductDetails = async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(500).json({
+      success: false,
+      message: `${error}`,
+    });
+  }
+};
+
+export const createProductReview = async (req, res) => {
+  try {
+    const { rating, comment } = req.body;
+    const review = {
+      user: req.user._id,
+      name: req.user.name,
+      rating: Number(rating),
+      comment: comment,
+    };
+    const product = await productModel.findById(req.body.productId);
+
+    const isReviewed = product.reviews.find(
+      (rev) => rev.user.toString() === req.user._id.toString()
+    );
+
+    if (isReviewed) {
+      product.reviews.forEach((rev) => {
+        if (rev.user.toString() === req.user._id.toString())
+          (rev.rating = rating), (rev.comment = comment);
+      });
+    } else {
+      product.reviews.push(review);
+      product.numOfReviews = product.reviews.length;
+    }
+
+    let avg = 0;
+
+    product.reviews.forEach((rev) => {
+      avg += rev.rating;
+    });
+
+    
+
+    product.ratings = avg / product.reviews.length;
+
+    console.log(product.reviews.length)
+    await product.save({ validateBeforeSave: false });
+
+    res.status(200).json({
+      success: true,
+    });
+  } catch (error) {
+    console.log(error);
+    res.json({
       success: false,
       message: `${error}`,
     });
