@@ -1,5 +1,25 @@
 import mongoose from "mongoose";
 
+const reviewSchema = new mongoose.Schema({
+    user: {
+      type: mongoose.Schema.ObjectId,
+      ref: "user",
+      required: true,
+    },
+    name: {
+      type: String,
+      required: true,
+    },
+    rating: {
+      type: Number,
+      required: true,
+    },
+    comment: {
+      type: String,
+      required: true,
+    },
+})
+
 const productSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -45,32 +65,7 @@ const productSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
-  reviews: [
-    {
-      user: {
-        type: mongoose.Schema.ObjectId,
-        ref: "user",
-        required: true,
-      },
-      name: {
-        type: String,
-        required: true,
-      },
-      rating: {
-        type: Number,
-        required: true,
-      },
-      comment: {
-        type: String,
-        required: true,
-      },
-    },
-  ],
-  user: {
-    type: mongoose.Schema.ObjectId,
-    ref: "User",
-    required: true,
-  },
+  reviews: [reviewSchema],
   createdAt: {
     type: Date,
     default: Date.now(),
