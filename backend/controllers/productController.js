@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import productModel from "../models/productModel.js";
 import ApiFeatures from "../utils/apifeatures.js";
 
@@ -141,3 +142,71 @@ export const createProductReview = async (req, res) => {
     });
   }
 };
+
+export const getProductReviews = async (req, res) => {
+  try {
+    const product = await productModel.findById(req.params.id)
+    res.json({
+      success: true,
+      reviews: product.reviews
+    })
+  } catch (error) {
+    console.log(error)
+    res.json({
+      success: false,
+      message: `${error}`
+    })
+  }
+}
+
+export const deleteProductReview = async (req, res) => {
+  try {
+    const {productId, reviewId} = req.query
+    const product = await productModel.findById(productId)
+
+    const reviewIndex = product.reviews.findIndex(
+      (rev) => rev._id.toString() === reviewId && rev.user.toString() === req.user._id.toString()
+    )
+    
+    if (reviewIndex === -1) {
+      return res.status(401).json({
+        success: false,
+        message: 'You can only delete your own reviews',
+      });
+    }
+
+    product.reviews.splice(reviewIndex, 1)
+
+    let avg = 0
+    reviews.forEach((rev) => {
+      avg += rev.rating
+    })
+    if (reviews.length === 0) {
+      product.ratings = 0;
+    } else {
+      product.ratings = avg / reviews.length;
+    }
+    product.numOfReviews = reviews.length
+    await productModel.findByIdAndUpdate(
+      req.query.productId,{
+        reviews,
+        ratings,
+        numOfReviews
+      },{
+        new: true,
+        runValidators: true,
+        useFindAndModify: false
+      }
+    )
+    res.json({
+      success: true,
+      message: 'Review has been deleted successfully'
+    })
+  } catch (error) {
+    console.log(error)
+    res.json({
+      success: false,
+      message: `${error}`
+    })
+  }
+}
