@@ -3,8 +3,10 @@ import {
   createProduct,
   createProductReview,
   deleteProduct,
+  deleteProductReview,
   getAllProducts,
   getProductDetails,
+  getProductReviews,
   updateProduct,
 } from "../controllers/productController.js";
 import { authorizeRoles, isAuthenticateUser } from "../middleware/auth.js";
@@ -32,5 +34,7 @@ productRouter.delete(
 );
 productRouter.get("/:id", getProductDetails);
 productRouter.post("/review", isAuthenticateUser, createProductReview)
+productRouter.get('/:id/reviews', getProductReviews)
+productRouter.post('/reviews', isAuthenticateUser, deleteProductReview)
 
 export default productRouter;
